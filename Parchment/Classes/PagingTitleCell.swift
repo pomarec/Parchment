@@ -29,7 +29,7 @@ open class PagingTitleCell: PagingCell {
   open override func setPagingItem(_ pagingItem: PagingItem, selected: Bool, options: PagingOptions) {
     if let titleItem = pagingItem as? PagingTitleItem {
       viewModel = PagingTitleCellViewModel(
-        title: titleItem.title,
+        attributedTitle: titleItem.attributedTitle,
         selected: selected,
         options: options)
     }
@@ -47,8 +47,6 @@ open class PagingTitleCell: PagingCell {
   
   open func configureTitleLabel() {
     guard let viewModel = viewModel else { return }
-    titleLabel.text = viewModel.title
-    titleLabel.textAlignment = .center
     
     if viewModel.selected {
       titleLabel.font = viewModel.selectedFont
@@ -59,6 +57,8 @@ open class PagingTitleCell: PagingCell {
       titleLabel.textColor = viewModel.textColor
       backgroundColor = viewModel.backgroundColor
     }
+    titleLabel.attributedText = viewModel.attributedTitle
+    titleLabel.textAlignment = .center
   }
   
   open override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {

@@ -39,7 +39,8 @@ extension FixedPagingViewController: PagingViewControllerDataSource {
   }
   
   public func pagingViewController<T>(_ pagingViewController: PagingViewController<T>, pagingItemForIndex index: Int) -> T {
-    return PagingIndexItem(index: index, title: viewControllers[index].title ?? "") as! T
+    let title = viewControllers[index].title ?? ""
+    return PagingIndexItem(index: index, attributedTitle: NSAttributedString(string: title)) as! T
   }
   
   public func pagingViewController<T>(_ pagingViewController: PagingViewController<T>, viewControllerForIndex index: Int) -> UIViewController {

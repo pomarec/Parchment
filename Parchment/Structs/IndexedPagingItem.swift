@@ -10,7 +10,7 @@ public struct PagingIndexItem: PagingTitleItem, Equatable, Hashable, Comparable 
   public let index: Int
   
   /// The title used in the menu cells.
-  public let title: String
+  public let attributedTitle: NSAttributedString
   
   public var hashValue: Int {
     return index
@@ -20,13 +20,13 @@ public struct PagingIndexItem: PagingTitleItem, Equatable, Hashable, Comparable 
   ///
   /// Parameter index: The index of the `PagingItem`.
   /// Parameter title: The title used in the menu cells.
-  public init(index: Int, title: String) {
-    self.title = title
+  public init(index: Int, attributedTitle: NSAttributedString) {
+    self.attributedTitle = attributedTitle
     self.index = index
   }
   
   public static func ==(lhs: PagingIndexItem, rhs: PagingIndexItem) -> Bool {
-    return lhs.index == rhs.index && lhs.title == rhs.title
+    return lhs.index == rhs.index && lhs.attributedTitle == rhs.attributedTitle
   }
   
   public static func <(lhs: PagingIndexItem, rhs: PagingIndexItem) -> Bool {
