@@ -31,9 +31,9 @@ open class PagingViewController<T: PagingItem>:
 
   /// The class type for the menu item. Override this if you want
   /// your own custom menu items. _Default: PagingTitleCell.self_
-  public var menuItemClass: PagingCell.Type {
-    get { return options.menuItemClass }
-    set { options.menuItemClass = newValue }
+  public var menuItemSource: PagingMenuItemSource {
+    get { return options.menuItemSource }
+    set { options.menuItemSource = newValue }
   }
 
   /// Determine the spacing between the menu items. _Default: 0_
@@ -110,7 +110,10 @@ open class PagingViewController<T: PagingItem>:
   /// only apply horizontally. _Default: .visible_
   public var indicatorOptions: PagingIndicatorOptions {
     get { return options.indicatorOptions }
-    set { options.indicatorOptions = newValue }
+    set {
+      options.indicatorOptions = newValue
+      collectionViewLayout.invalidateLayout()
+    }
   }
 
   /// The class type for the indicator view. Override this if you want
@@ -127,7 +130,10 @@ open class PagingViewController<T: PagingItem>:
   /// Determine the color of the indicator view.
   public var indicatorColor: UIColor {
     get { return options.indicatorColor }
-    set { options.indicatorColor = newValue }
+    set {
+      options.indicatorColor = newValue
+      collectionViewLayout.invalidateLayout()
+    }
   }
   
   /// Add a border at the bottom of the menu items. The border will be
@@ -135,7 +141,10 @@ open class PagingViewController<T: PagingItem>:
   /// _Default: .visible_
   public var borderOptions: PagingBorderOptions {
     get { return options.borderOptions }
-    set { options.borderOptions = newValue }
+    set {
+      options.borderOptions = newValue
+      collectionViewLayout.invalidateLayout()
+    }
   }
 
   /// The class type for the border view. Override this if you want
@@ -152,7 +161,10 @@ open class PagingViewController<T: PagingItem>:
   /// Determine the color of the border view.
   public var borderColor: UIColor {
     get { return options.borderColor }
-    set { options.borderColor = newValue }
+    set {
+      options.borderColor = newValue
+      collectionViewLayout.invalidateLayout()
+    }
   }
 
   /// Updates the content inset for the menu items based on the
@@ -423,15 +435,30 @@ open class PagingViewController<T: PagingItem>:
   open override func viewDidLoad() {
     super.viewDidLoad()
     
+    #if swift(>=4.2)
+    addChild(pageViewController)
+    pagingView.configure()
+    pageViewController.didMove(toParent: self)
+    #else
     addChildViewController(pageViewController)
     pagingView.configure()
     pageViewController.didMove(toParentViewController: self)
+    #endif
+    
     pageViewController.dataSource = self
     
     collectionView.showsHorizontalScrollIndicator = false
     collectionView.delegate = self
     collectionView.dataSource = self
-    collectionView.register(options.menuItemClass, forCellWithReuseIdentifier: PagingCellReuseIdentifier)
+	
+	switch options.menuItemSource {
+	case .class(let type):
+		collectionView.register(type, forCellWithReuseIdentifier: PagingCellReuseIdentifier)
+		
+	case .nib(let nib):
+		collectionView.register(nib, forCellWithReuseIdentifier: PagingCellReuseIdentifier)
+	}
+	
     
     configureMenuInteraction()
     configureContentInteraction()
@@ -608,6 +635,7 @@ open class PagingViewController<T: PagingItem>:
   }
   
   private func setupGestureRecognizers() {
+    
     let swipeGestureRecognizerLeft = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipeGestureRecognizer))
     swipeGestureRecognizerLeft.direction = .left
     
@@ -761,6 +789,8 @@ open class PagingViewController<T: PagingItem>:
     
     pageViewController.removeAllViewControllers()
     selectViewController(pagingItem, direction: .none, animated: false)
+    
+    configureSizeCache(for: pagingItem)
 
     // Reloading the data triggers the didFinishScrollingFrom delegate
     // to be called which in turn means the wrong item will be selected.
@@ -853,7 +883,7 @@ open class PagingViewController<T: PagingItem>:
       if case let .scrolling(_, _, progress, initialContentOffset, distance) = state {
         if collectionView.contentSize.width >= collectionView.bounds.width && state.progress != 0 {
           let contentOffset = CGPoint(
-            x: initialContentOffset.x + (distance * fabs(progress)),
+            x: initialContentOffset.x + (distance * abs(progress)),
             y: initialContentOffset.y)
           
           // We need to use setContentOffset with no animation in
