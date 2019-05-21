@@ -43,7 +43,10 @@ class ViewController: UIViewController {
 extension ViewController: PagingViewControllerDataSource {
   
   func pagingViewController<T>(_ pagingViewController: PagingViewController<T>, pagingItemForIndex index: Int) -> T {
-    return PagingIndexItem(index: index, title: cities[index]) as! T
+    let cityName = cities[index]
+    let attributedTitle = NSMutableAttributedString(string: "¤ ", attributes: [.foregroundColor: pagingViewController.selectedTextColor])
+    attributedTitle.append(NSAttributedString(string: cityName))
+    return PagingIndexItem(index: index, attributedTitle: attributedTitle) as! T
   }
   
   func pagingViewController<T>(_ pagingViewController: PagingViewController<T>, viewControllerForIndex index: Int) -> UIViewController {
@@ -69,12 +72,10 @@ extension ViewController: PagingViewControllerDelegate {
 
     let insets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
     let size = CGSize(width: CGFloat.greatestFiniteMagnitude, height: pagingViewController.menuItemSize.height)
-    let attributes = [NSAttributedString.Key.font: pagingViewController.font]
     
-    let rect = item.title.boundingRect(with: size,
-      options: .usesLineFragmentOrigin,
-      attributes: attributes,
-      context: nil)
+    let rect = item.attributedTitle.boundingRect(with: size,
+                                                 options: .usesLineFragmentOrigin,
+                                                 context: nil)
 
     let width = ceil(rect.width) + insets.left + insets.right
     
